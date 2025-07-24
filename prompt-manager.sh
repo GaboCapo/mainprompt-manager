@@ -7,6 +7,8 @@
 PROMPT_DIR="/home/commander/Dokumente/Systemprompts"
 MAIN_PROMPT="MainPrompt.md"
 BACKUP_DIR="$PROMPT_DIR/backups"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_DIR="$SCRIPT_DIR/templates"
 
 # Farben für bessere Lesbarkeit
 RED='\033[0;31m'
@@ -15,8 +17,9 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Backup-Verzeichnis erstellen falls nicht vorhanden
+# Backup-Verzeichnis und Template-Verzeichnis erstellen falls nicht vorhanden
 mkdir -p "$BACKUP_DIR"
+mkdir -p "$TEMPLATE_DIR"
 
 # Funktion: Header anzeigen
 show_header() {
@@ -133,41 +136,198 @@ switch_prompt() {
         return 1
     fi
 }
-# Hauptprogramm
-main() {
-    # Header anzeigen
-    show_header
+
+# Funktion: Neuen Prompt erstellen
+create_new_prompt() {
+    echo -e "${YELLOW}Neuen Prompt erstellen${NC}"
+    echo "====================="
+    echo
     
-    # Aktuellen Prompt anzeigen
-    show_current_prompt
+    # Editor auswählen
+    echo -e "${BLUE}Wählen Sie einen Editor:${NC}"
+    echo "  [1] vim"
+    echo "  [2] nano"
+    echo
+    read -p "Ihre Wahl (1 oder 2): " editor_choice
     
+    case $editor_choice in
+        1) EDITOR="vim" ;;
+        2) EDITOR="nano" ;;
+        *) 
+            echo -e "${RED}Ungültige Auswahl! Verwende nano als Standard.${NC}"
+            EDITOR="nano"
+            ;;
+    esac
+    
+    # Namen erfragen
+    echo
+    echo -e "${BLUE}Geben Sie einen Namen für den neuen Prompt ein:${NC}"
+    echo "(z.B. 'Webentwicklung Prompt', 'Data Science Assistant')"
+    read -p "> " prompt_name
+    
+    if [ -z "$prompt_name" ]; then
+        echo -e "${RED}Fehler: Name darf nicht leer sein!${NC}"
+        return 1
+    fi
+    
+    # Dateinamen generieren (Leerzeichen durch Bindestriche ersetzen, lowercase)
+    filename=$(echo "$prompt_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[^a-z0-9-]//g')
+    filename="${filename}.md"
+    
+    # Temporäre Datei mit Template erstellen
+    temp_file="/tmp/new_prompt_$$.md"
+    cat > "$temp_file" << EOF
+---
+name: $prompt_name
+version: 1.0
+last_updated: $(date +%Y-%m-%d)
+project: $(echo "$filename" | sed 's/\.md$//')
+tags:
+  - tag1
+  - tag2
+status: aktiv
+---
+
+# $prompt_name
+
+## Kontext
+[Beschreiben Sie hier den Kontext und Zweck dieses Prompts]
+
+## Hauptaufgaben
+1. [Aufgabe 1]
+2. [Aufgabe 2]
+3. [Aufgabe 3]
+
+## Spezialisierung
+- [Spezieller Fokus 1]
+- [Spezieller Fokus 2]
+
+## Wichtige Regeln
+- [Regel 1]
+- [Regel 2]
+
+## Beispiele
+[Fügen Sie hier Beispiele oder spezielle Anweisungen ein]
+EOF
+    
+    # Editor öffnen
+    $EDITOR "$temp_file"
+    
+    # Prüfen ob Datei gespeichert wurde
+    if [ -s "$temp_file" ]; then
+        # In Template-Ordner speichern
+        cp "$temp_file" "$TEMPLATE_DIR/$filename"
+        
+        # Optional: Auch direkt als verfügbaren Prompt speichern
+        cp "$temp_file" "$PROMPT_DIR/$filename"
+        
+        echo
+        echo -e "${GREEN}✓ Prompt erfolgreich erstellt!${NC}"
+        echo -e "${BLUE}Gespeichert als:${NC}"
+        echo "  - Template: $TEMPLATE_DIR/$filename"
+        echo "  - Prompt: $PROMPT_DIR/$filename"
+        
+        # Aufräumen
+        rm "$temp_file"
+        
+        # Fragen ob direkt aktiviert werden soll
+        echo
+        echo -e "${YELLOW}Möchten Sie diesen Prompt direkt aktivieren? (j/n)${NC}"
+        read -p "> " activate
+        
+        if [[ "$activate" =~ ^[jJyY]$ ]]; then
+            # Backup erstellen
+            if [ -f "$PROMPT_DIR/$MAIN_PROMPT" ]; then
+                local timestamp=$(date +%Y%m%d_%H%M%S)
+                local backup_file="$BACKUP_DIR/MainPrompt_backup_$timestamp.md"
+                cp "$PROMPT_DIR/$MAIN_PROMPT" "$backup_file"
+                echo -e "${YELLOW}Backup erstellt: $(basename "$backup_file")${NC}"
+            fi
+            
+            # Aktivieren
+            cp "$PROMPT_DIR/$filename" "$PROMPT_DIR/$MAIN_PROMPT"
+            echo -e "${GREEN}✓ Neuer Prompt wurde aktiviert!${NC}"
+        fi
+    else
+        echo -e "${RED}Abgebrochen - keine Datei erstellt.${NC}"
+        rm -f "$temp_file"
+    fi
+}
+# Funktion: Hauptmenü anzeigen
+show_main_menu() {
+    echo -e "${YELLOW}Hauptmenü:${NC}"
+    echo "==========="
+    echo "  [1] Prompt wechseln"
+    echo "  [2] Neuen Prompt erstellen"
+    echo "  [q] Beenden"
+    echo
+}
+
+# Funktion: Prompt-Wechsel Menü
+prompt_switch_menu() {
     # Verfügbare Prompts auflisten
     list_prompts
     
     # Wenn keine Prompts gefunden wurden
     if [ ${#prompts[@]} -eq 0 ]; then
         echo -e "${RED}Keine Prompts gefunden in: $PROMPT_DIR${NC}"
-        echo -e "${YELLOW}Hinweis: Legen Sie .md Dateien in diesem Verzeichnis ab.${NC}"
-        exit 1
+        echo -e "${YELLOW}Hinweis: Erstellen Sie einen neuen Prompt über das Hauptmenü.${NC}"
+        return 1
     fi
     
     # Benutzer-Eingabe
-    echo -e "${YELLOW}Wählen Sie einen Prompt (Nummer eingeben) oder 'q' zum Beenden:${NC}"
+    echo -e "${YELLOW}Wählen Sie einen Prompt (Nummer eingeben) oder 'b' für zurück:${NC}"
     read -p "> " choice
     
-    # Beenden bei 'q'
-    if [ "$choice" == "q" ] || [ "$choice" == "Q" ]; then
-        echo -e "${BLUE}Auf Wiedersehen!${NC}"
-        exit 0
+    # Zurück bei 'b'
+    if [ "$choice" == "b" ] || [ "$choice" == "B" ]; then
+        return 0
     fi
     
     # Prompt wechseln
     switch_prompt "$choice"
+    
+    # Kurz warten
+    sleep 2
+}
+
+# Hauptprogramm
+main() {
+    while true; do
+        # Header anzeigen
+        show_header
+        
+        # Aktuellen Prompt anzeigen
+        show_current_prompt
+        
+        # Hauptmenü anzeigen
+        show_main_menu
+        
+        # Benutzer-Eingabe
+        read -p "> " main_choice
+        
+        case $main_choice in
+            1)
+                # Prompt wechseln
+                prompt_switch_menu
+                ;;
+            2)
+                # Neuen Prompt erstellen
+                create_new_prompt
+                echo
+                read -p "Drücken Sie Enter zum Fortfahren..."
+                ;;
+            q|Q)
+                echo -e "${BLUE}Auf Wiedersehen!${NC}"
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Ungültige Auswahl!${NC}"
+                sleep 1
+                ;;
+        esac
+    done
 }
 
 # Skript ausführen
 main
-
-# Warte auf Eingabe bevor das Fenster geschlossen wird
-echo
-read -p "Drücken Sie Enter zum Beenden..."

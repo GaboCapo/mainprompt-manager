@@ -5,10 +5,13 @@ Ein einfaches Shell-Tool zum Verwalten und Wechseln zwischen verschiedenen Syste
 ## 🚀 Features
 
 - **Einfacher Prompt-Wechsel**: Nummerierte Liste aller verfügbaren Prompts
+- **Neue Prompts erstellen**: Interaktive Erstellung mit Editor-Auswahl (vim/nano)
+- **Template-Verwaltung**: Alle Prompts werden als Templates gespeichert
 - **Automatische Backups**: Sichert den aktuellen MainPrompt.md vor dem Wechsel
 - **YAML-Header Support**: Zeigt Namen und Projekt-Informationen aus den Prompt-Dateien
 - **Farbige Ausgabe**: Übersichtliche Darstellung mit Farb-Highlighting
 - **Aktiver Prompt-Indikator**: Zeigt deutlich, welcher Prompt gerade aktiv ist
+- **Hauptmenü**: Übersichtliche Navigation zwischen den Funktionen
 
 ## 📋 Voraussetzungen
 
@@ -42,10 +45,20 @@ sudo ln -s $(pwd)/prompt-manager.sh /usr/local/bin/prompt-manager
 ./prompt-manager.sh
 ```
 
-Das Tool zeigt:
-1. Den aktuell aktiven Prompt
-2. Eine nummerierte Liste aller verfügbaren Prompts
-3. Wartet auf Ihre Auswahl
+Das Tool zeigt ein Hauptmenü mit folgenden Optionen:
+1. **Prompt wechseln**: Zeigt alle verfügbaren Prompts zur Auswahl
+2. **Neuen Prompt erstellen**: Interaktive Erstellung eines neuen Prompts
+3. **Beenden**: Verlässt das Programm
+
+### Neuen Prompt erstellen
+
+1. Wählen Sie Option 2 im Hauptmenü
+2. Wählen Sie Ihren bevorzugten Editor (vim oder nano)
+3. Geben Sie einen Namen für den Prompt ein
+4. Der Editor öffnet sich mit einer Vorlage
+5. Bearbeiten Sie die Vorlage nach Ihren Wünschen
+6. Speichern und schließen Sie den Editor
+7. Optional: Aktivieren Sie den neuen Prompt sofort
 
 ### Prompt-Struktur
 
@@ -76,6 +89,12 @@ status: aktiv
 └── backups/               # Automatische Backups
     ├── MainPrompt_backup_20250115_143022.md
     └── MainPrompt_backup_20250115_151544.md
+
+/home/commander/Dokumente/Scripts/mainprompt-manager/
+└── templates/             # Alle Prompt-Templates
+    ├── projekt1-prompt.md
+    ├── projekt2-prompt.md
+    └── archiviert-prompt.md
 ```
 
 ## ⚙️ Konfiguration
@@ -86,6 +105,7 @@ Die Pfade sind in der Datei `prompt-manager.sh` konfiguriert:
 PROMPT_DIR="/home/commander/Dokumente/Systemprompts"
 MAIN_PROMPT="MainPrompt.md"
 BACKUP_DIR="$PROMPT_DIR/backups"
+TEMPLATE_DIR="$SCRIPT_DIR/templates"
 ```
 
 Sie können diese bei Bedarf anpassen.

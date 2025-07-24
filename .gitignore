@@ -1,0 +1,28 @@
+# Backup-Dateien
+backups/
+*.backup
+*.bak
+*~
+
+# System-Dateien
+.DS_Store
+Thumbs.db
+
+# Editor-Dateien
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Temporäre Dateien
+*.tmp
+*.temp
+.tmp/
+
+# Logs
+*.log
+
+# Test-Dateien
+test/
+tests/
+*.test.md

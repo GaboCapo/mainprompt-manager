@@ -6,17 +6,21 @@ Ein einfaches Shell-Tool zum Verwalten und Wechseln zwischen verschiedenen Syste
 
 - **Einfacher Prompt-Wechsel**: Nummerierte Liste aller verfügbaren Prompts
 - **Neue Prompts erstellen**: Interaktive Erstellung mit Editor-Auswahl (vim/nano)
+- **Config-Verwaltung**: Konfigurierbare Pfade und Einstellungen
+- **Plattform-Prompts**: Automatische Generierung von Plattform-spezifischen Prompts
 - **Template-Verwaltung**: Alle Prompts werden als Templates gespeichert
 - **Automatische Backups**: Sichert den aktuellen MainPrompt.md vor dem Wechsel
 - **YAML-Header Support**: Zeigt Namen und Projekt-Informationen aus den Prompt-Dateien
 - **Farbige Ausgabe**: Übersichtliche Darstellung mit Farb-Highlighting
 - **Aktiver Prompt-Indikator**: Zeigt deutlich, welcher Prompt gerade aktiv ist
 - **Hauptmenü**: Übersichtliche Navigation zwischen den Funktionen
+- **Fallback-Mechanismus**: Nutzt Template-Verzeichnis wenn Systemprompt-Ordner fehlt
 
 ## 📋 Voraussetzungen
 
 - Bash Shell
 - Linux/Unix System (getestet auf Ubuntu/Debian)
+- jq (JSON-Prozessor) - für Config-Verwaltung
 - Schreibrechte im Systemprompts-Verzeichnis
 
 ## 🛠️ Installation
@@ -48,7 +52,9 @@ sudo ln -s $(pwd)/prompt-manager.sh /usr/local/bin/prompt-manager
 Das Tool zeigt ein Hauptmenü mit folgenden Optionen:
 1. **Prompt wechseln**: Zeigt alle verfügbaren Prompts zur Auswahl
 2. **Neuen Prompt erstellen**: Interaktive Erstellung eines neuen Prompts
-3. **Beenden**: Verlässt das Programm
+3. **Config bearbeiten**: Pfade und Einstellungen anpassen
+4. **Plattform-Prompt erstellen**: Generiert einen Plattform-spezifischen Prompt
+5. **Beenden**: Verlässt das Programm
 
 ### Neuen Prompt erstellen
 
@@ -91,24 +97,34 @@ status: aktiv
     └── MainPrompt_backup_20250115_151544.md
 
 /home/commander/Dokumente/Scripts/mainprompt-manager/
-└── templates/             # Alle Prompt-Templates
-    ├── projekt1-prompt.md
-    ├── projekt2-prompt.md
-    └── archiviert-prompt.md
+├── prompt-manager.sh      # Hauptskript
+├── config.json           # Konfigurationsdatei
+├── README.md             # Dokumentation
+├── LICENSE               # MIT Lizenz
+├── .gitignore           # Git-Ignores
+├── templates/           # Alle Prompt-Templates
+│   ├── projekt1-prompt.md
+│   ├── projekt2-prompt.md
+│   └── archiviert-prompt.md
+└── platform-prompts/    # Plattform-spezifische Prompts
+    └── DE-platform-prompt.md
 ```
 
 ## ⚙️ Konfiguration
 
-Die Pfade sind in der Datei `prompt-manager.sh` konfiguriert:
+Die Pfade sind in der Datei `config.json` konfiguriert:
 
-```bash
-PROMPT_DIR="/home/commander/Dokumente/Systemprompts"
-MAIN_PROMPT="MainPrompt.md"
-BACKUP_DIR="$PROMPT_DIR/backups"
-TEMPLATE_DIR="$SCRIPT_DIR/templates"
+```json
+{
+  "prompt_dir": "/home/$USER/Dokumente/Systemprompts",
+  "main_prompt_filename": "MainPrompt.md",
+  "backup_dir": "backups",
+  "default_editor": "nano",
+  "language": "de"
+}
 ```
 
-Sie können diese bei Bedarf anpassen.
+Sie können diese über Option 3 im Hauptmenü anpassen.
 
 ## 🔧 Erweiterte Funktionen
 
@@ -157,3 +173,24 @@ Für Fragen oder Vorschläge öffnen Sie bitte ein Issue im GitHub Repository.
 ---
 
 **Hinweis**: Dieses Tool wurde speziell für die Verwaltung von Claude AI System-Prompts entwickelt.
+
+### Config bearbeiten
+
+1. Wählen Sie Option 3 im Hauptmenü
+2. Wählen Sie Ihren Editor (vim oder nano)
+3. Bearbeiten Sie die JSON-Config:
+   - `prompt_dir`: Verzeichnis für Systemprompts
+   - `main_prompt_filename`: Name der Hauptprompt-Datei
+   - `backup_dir`: Name des Backup-Unterordners
+   - `default_editor`: Standard-Editor (vim/nano)
+4. Speichern und Tool neu starten
+
+### Plattform-Prompt erstellen
+
+1. Wählen Sie Option 4 im Hauptmenü
+2. Überprüfen Sie die erkannten Pfade
+3. Der generierte Prompt enthält:
+   - Automatisch erkannten Benutzernamen
+   - Korrekten Pfad zum MainPrompt
+   - Deutsche Anweisungen für Claude
+4. Kopieren Sie den generierten Text in die Claude-Plattform

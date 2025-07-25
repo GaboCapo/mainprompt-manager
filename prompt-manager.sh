@@ -3,12 +3,44 @@
 # Mainprompt Manager
 # Verwaltet und wechselt zwischen verschiedenen System-Prompts
 
-# Konfiguration
-PROMPT_DIR="/home/commander/Dokumente/Systemprompts"
-MAIN_PROMPT="MainPrompt.md"
-BACKUP_DIR="$PROMPT_DIR/backups"
+# Script-Verzeichnis ermitteln
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="$SCRIPT_DIR/config.json"
+
+# Standard-Konfiguration
+DEFAULT_PROMPT_DIR="/home/$USER/Dokumente/Systemprompts"
+DEFAULT_MAIN_PROMPT="MainPrompt.md"
+DEFAULT_BACKUP_DIR="backups"
+DEFAULT_EDITOR="nano"
+
+# Config laden oder erstellen
+if [ -f "$CONFIG_FILE" ]; then
+    # Config laden
+    PROMPT_DIR=$(jq -r '.prompt_dir // "'$DEFAULT_PROMPT_DIR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_PROMPT_DIR")
+    MAIN_PROMPT=$(jq -r '.main_prompt_filename // "'$DEFAULT_MAIN_PROMPT'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_MAIN_PROMPT")
+    BACKUP_DIR_NAME=$(jq -r '.backup_dir // "'$DEFAULT_BACKUP_DIR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_BACKUP_DIR")
+    DEFAULT_EDITOR_CONFIG=$(jq -r '.default_editor // "'$DEFAULT_EDITOR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_EDITOR")
+else
+    # Standard-Config erstellen
+    cat > "$CONFIG_FILE" << EOF
+{
+  "prompt_dir": "$DEFAULT_PROMPT_DIR",
+  "main_prompt_filename": "$DEFAULT_MAIN_PROMPT",
+  "backup_dir": "$DEFAULT_BACKUP_DIR",
+  "default_editor": "$DEFAULT_EDITOR",
+  "language": "de"
+}
+EOF
+    PROMPT_DIR="$DEFAULT_PROMPT_DIR"
+    MAIN_PROMPT="$DEFAULT_MAIN_PROMPT"
+    BACKUP_DIR_NAME="$DEFAULT_BACKUP_DIR"
+    DEFAULT_EDITOR_CONFIG="$DEFAULT_EDITOR"
+fi
+
+# Pfade setzen
+BACKUP_DIR="$PROMPT_DIR/$BACKUP_DIR_NAME"
 TEMPLATE_DIR="$SCRIPT_DIR/templates"
+PLATFORM_PROMPTS_DIR="$SCRIPT_DIR/platform-prompts"
 
 # Farben für bessere Lesbarkeit
 RED='\033[0;31m'
@@ -17,9 +49,17 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Backup-Verzeichnis und Template-Verzeichnis erstellen falls nicht vorhanden
+# Backup-Verzeichnis, Template-Verzeichnis und Platform-Prompts erstellen falls nicht vorhanden
 mkdir -p "$BACKUP_DIR"
 mkdir -p "$TEMPLATE_DIR"
+mkdir -p "$PLATFORM_PROMPTS_DIR"
+
+# Wenn Prompt-Verzeichnis nicht existiert, Template-Verzeichnis verwenden
+if [ ! -d "$PROMPT_DIR" ]; then
+    echo -e "${YELLOW}Hinweis: Prompt-Verzeichnis nicht gefunden. Verwende Template-Verzeichnis.${NC}"
+    PROMPT_DIR="$TEMPLATE_DIR"
+    mkdir -p "$PROMPT_DIR"
+fi
 
 # Funktion: Header anzeigen
 show_header() {
@@ -253,12 +293,133 @@ EOF
         rm -f "$temp_file"
     fi
 }
+
+# Funktion: Config bearbeiten
+edit_config() {
+    echo -e "${YELLOW}Config-Datei bearbeiten${NC}"
+    echo "====================="
+    echo
+    
+    # Aktuelle Config anzeigen
+    echo -e "${BLUE}Aktuelle Konfiguration:${NC}"
+    echo "- Prompt-Verzeichnis: $PROMPT_DIR"
+    echo "- MainPrompt-Dateiname: $MAIN_PROMPT"
+    echo "- Backup-Verzeichnis: $BACKUP_DIR_NAME"
+    echo "- Standard-Editor: $DEFAULT_EDITOR_CONFIG"
+    echo
+    
+    # Editor auswählen
+    echo -e "${BLUE}Wählen Sie einen Editor:${NC}"
+    echo "  [1] vim"
+    echo "  [2] nano"
+    echo
+    read -p "Ihre Wahl (1 oder 2): " editor_choice
+    
+    case $editor_choice in
+        1) EDITOR="vim" ;;
+        2) EDITOR="nano" ;;
+        *) 
+            echo -e "${RED}Ungültige Auswahl! Verwende nano als Standard.${NC}"
+            EDITOR="nano"
+            ;;
+    esac
+    
+    # Config bearbeiten
+    $EDITOR "$CONFIG_FILE"
+    
+    echo
+    echo -e "${GREEN}✓ Config wurde bearbeitet!${NC}"
+    echo -e "${YELLOW}Hinweis: Starten Sie das Tool neu, um die Änderungen zu übernehmen.${NC}"
+}
+
+# Funktion: Plattform-Prompt erstellen
+create_platform_prompt() {
+    echo -e "${YELLOW}Plattform-Prompt erstellen (DE)${NC}"
+    echo "================================"
+    echo
+    
+    # Aktuellen Pfad und Benutzer anzeigen
+    local current_user="$USER"
+    local actual_prompt_path="$PROMPT_DIR/$MAIN_PROMPT"
+    
+    # Pfad mit Benutzername erstellen
+    local user_prompt_path=$(echo "$actual_prompt_path" | sed "s|/home/[^/]*|/home/$current_user|")
+    
+    echo -e "${BLUE}Erkannte Informationen:${NC}"
+    echo "- Benutzername: $current_user"
+    echo "- MainPrompt-Pfad: $user_prompt_path"
+    echo
+    
+    # Bestätigung
+    echo -e "${YELLOW}Ist der Pfad korrekt? (j/n)${NC}"
+    read -p "> " confirm
+    
+    if [[ ! "$confirm" =~ ^[jJyY]$ ]]; then
+        echo -e "${RED}Abgebrochen. Bitte passen Sie zuerst die Config an (Option 3).${NC}"
+        return 1
+    fi
+    
+    # Plattform-Prompt generieren
+    local platform_prompt_file="$PLATFORM_PROMPTS_DIR/DE-platform-prompt.md"
+    
+    cat > "$platform_prompt_file" << EOF
+# Plattform-Prompt für Claude (Deutsch)
+
+Führe vor jeder Antwort einen Reasoning Prozess durch, wo du deine Vorgehensweise Strategie noch einmal zusammenfasst. 
+
+Lese dir vorab immer über die Erweiterung Desktop Commander ~/${user_prompt_path#/home/$current_user/} durch dieser definiert den für dich relevanten Kontext.
+
+Solltest du Probleme haben stoppe jederzeit und wir lösen zusammen den Fehler.
+
+Ich will bevor du irgendwelche Methoden Ansätze ausprobiert mich immer vorher fragst ob wir die machen sollen.
+
+---
+
+## Hinweise zur Verwendung:
+
+1. Dieser Plattform-Prompt wurde automatisch generiert für:
+   - Benutzer: $current_user
+   - MainPrompt-Pfad: $user_prompt_path
+
+2. Kopieren Sie den obigen Text (ohne diese Hinweise) und fügen Sie ihn in die Claude-Plattform ein.
+
+3. Der Prompt sorgt dafür, dass Claude:
+   - Vor jeder Antwort seinen Denkprozess durchführt
+   - Den MainPrompt automatisch liest
+   - Bei Problemen stoppt und nachfragt
+   - Vor neuen Ansätzen um Erlaubnis fragt
+
+Generiert am: $(date +"%Y-%m-%d %H:%M:%S")
+EOF
+    
+    echo -e "${GREEN}✓ Plattform-Prompt wurde erstellt!${NC}"
+    echo -e "${BLUE}Gespeichert unter: $platform_prompt_file${NC}"
+    echo
+    echo -e "${YELLOW}Anleitung:${NC}"
+    echo "1. Öffnen Sie die Datei: $platform_prompt_file"
+    echo "2. Kopieren Sie den Text bis zur Trennlinie (---)"
+    echo "3. Fügen Sie ihn in die Claude-Plattform ein"
+    echo
+    
+    # Optional: Datei direkt anzeigen
+    echo -e "${YELLOW}Möchten Sie den Prompt jetzt anzeigen? (j/n)${NC}"
+    read -p "> " show
+    
+    if [[ "$show" =~ ^[jJyY]$ ]]; then
+        echo
+        echo -e "${BLUE}=== PLATTFORM-PROMPT (zum Kopieren) ===${NC}"
+        sed -n '1,/^---$/p' "$platform_prompt_file" | head -n -1
+        echo -e "${BLUE}=======================================${NC}"
+    fi
+}
 # Funktion: Hauptmenü anzeigen
 show_main_menu() {
     echo -e "${YELLOW}Hauptmenü:${NC}"
     echo "==========="
     echo "  [1] Prompt wechseln"
     echo "  [2] Neuen Prompt erstellen"
+    echo "  [3] Config bearbeiten"
+    echo "  [4] Plattform-Prompt erstellen"
     echo "  [q] Beenden"
     echo
 }
@@ -314,6 +475,18 @@ main() {
             2)
                 # Neuen Prompt erstellen
                 create_new_prompt
+                echo
+                read -p "Drücken Sie Enter zum Fortfahren..."
+                ;;
+            3)
+                # Config bearbeiten
+                edit_config
+                echo
+                read -p "Drücken Sie Enter zum Fortfahren..."
+                ;;
+            4)
+                # Plattform-Prompt erstellen
+                create_platform_prompt
                 echo
                 read -p "Drücken Sie Enter zum Fortfahren..."
                 ;;

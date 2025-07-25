@@ -4,6 +4,12 @@ backups/
 *.bak
 *~
 
+# Config-Dateien (können Benutzerpfade enthalten)
+config.json
+
+# Generierte Plattform-Prompts (benutzerspezifisch)
+platform-prompts/*.md
+
 # System-Dateien
 .DS_Store
 Thumbs.db

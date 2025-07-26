@@ -183,24 +183,7 @@ create_new_prompt() {
     echo "====================="
     echo
     
-    # Editor auswählen
-    echo -e "${BLUE}Wählen Sie einen Editor:${NC}"
-    echo "  [1] vim"
-    echo "  [2] nano"
-    echo
-    read -p "Ihre Wahl (1 oder 2): " editor_choice
-    
-    case $editor_choice in
-        1) EDITOR="vim" ;;
-        2) EDITOR="nano" ;;
-        *) 
-            echo -e "${RED}Ungültige Auswahl! Verwende nano als Standard.${NC}"
-            EDITOR="nano"
-            ;;
-    esac
-    
     # Namen erfragen
-    echo
     echo -e "${BLUE}Geben Sie einen Namen für den neuen Prompt ein:${NC}"
     echo "(z.B. 'Webentwicklung Prompt', 'Data Science Assistant')"
     read -p "> " prompt_name
@@ -250,8 +233,8 @@ status: aktiv
 [Fügen Sie hier Beispiele oder spezielle Anweisungen ein]
 EOF
     
-    # Editor öffnen
-    $EDITOR "$temp_file"
+    # Editor öffnen (immer nano)
+    nano "$temp_file"
     
     # Prüfen ob Datei gespeichert wurde
     if [ -s "$temp_file" ]; then
@@ -305,27 +288,14 @@ edit_config() {
     echo "- Prompt-Verzeichnis: $PROMPT_DIR"
     echo "- MainPrompt-Dateiname: $MAIN_PROMPT"
     echo "- Backup-Verzeichnis: $BACKUP_DIR_NAME"
-    echo "- Standard-Editor: $DEFAULT_EDITOR_CONFIG"
+    echo "- Standard-Editor: nano"
     echo
     
-    # Editor auswählen
-    echo -e "${BLUE}Wählen Sie einen Editor:${NC}"
-    echo "  [1] vim"
-    echo "  [2] nano"
-    echo
-    read -p "Ihre Wahl (1 oder 2): " editor_choice
+    echo -e "${YELLOW}Öffne Config-Datei mit nano...${NC}"
+    sleep 1
     
-    case $editor_choice in
-        1) EDITOR="vim" ;;
-        2) EDITOR="nano" ;;
-        *) 
-            echo -e "${RED}Ungültige Auswahl! Verwende nano als Standard.${NC}"
-            EDITOR="nano"
-            ;;
-    esac
-    
-    # Config bearbeiten
-    $EDITOR "$CONFIG_FILE"
+    # Config mit nano bearbeiten
+    nano "$CONFIG_FILE"
     
     echo
     echo -e "${GREEN}✓ Config wurde bearbeitet!${NC}"
@@ -412,6 +382,67 @@ EOF
         echo -e "${BLUE}=======================================${NC}"
     fi
 }
+
+# Funktion: Verzeichnis öffnen (Cross-Platform)
+open_directory() {
+    local dir="$1"
+    local dir_name="$2"
+    
+    if [ ! -d "$dir" ]; then
+        echo -e "${RED}Fehler: Verzeichnis existiert nicht: $dir${NC}"
+        return 1
+    fi
+    
+    echo -e "${YELLOW}Öffne $dir_name...${NC}"
+    
+    # Betriebssystem erkennen
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux
+        if command -v xdg-open &> /dev/null; then
+            xdg-open "$dir" 2>/dev/null &
+        elif command -v nautilus &> /dev/null; then
+            nautilus "$dir" 2>/dev/null &
+        elif command -v dolphin &> /dev/null; then
+            dolphin "$dir" 2>/dev/null &
+        elif command -v nemo &> /dev/null; then
+            nemo "$dir" 2>/dev/null &
+        elif command -v thunar &> /dev/null; then
+            thunar "$dir" 2>/dev/null &
+        else
+            echo -e "${RED}Kein Dateimanager gefunden!${NC}"
+            echo -e "${BLUE}Verzeichnis: $dir${NC}"
+            return 1
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # Mac OS
+        open "$dir" 2>/dev/null &
+    elif [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
+        # Windows
+        explorer.exe "$dir" 2>/dev/null &
+    else
+        echo -e "${RED}Unbekanntes Betriebssystem: $OSTYPE${NC}"
+        echo -e "${BLUE}Verzeichnis: $dir${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}✓ Dateimanager wurde geöffnet${NC}"
+}
+
+# Funktion: Plattform-Prompt Verzeichnis öffnen
+open_platform_prompts_dir() {
+    echo -e "${YELLOW}Plattform-Prompt Verzeichnis öffnen${NC}"
+    echo "===================================="
+    echo
+    open_directory "$PLATFORM_PROMPTS_DIR" "Plattform-Prompts Verzeichnis"
+}
+
+# Funktion: Main Prompt Verzeichnis öffnen
+open_main_prompt_dir() {
+    echo -e "${YELLOW}Main Prompt Verzeichnis öffnen${NC}"
+    echo "==============================="
+    echo
+    open_directory "$PROMPT_DIR" "Main Prompt Verzeichnis"
+}
 # Funktion: Hauptmenü anzeigen
 show_main_menu() {
     echo -e "${YELLOW}Hauptmenü:${NC}"
@@ -420,6 +451,8 @@ show_main_menu() {
     echo "  [2] Neuen Prompt erstellen"
     echo "  [3] Config bearbeiten"
     echo "  [4] Plattform-Prompt erstellen"
+    echo "  [5] Plattform-Prompt Verzeichnis öffnen"
+    echo "  [6] Main Prompt Verzeichnis öffnen"
     echo "  [q] Beenden"
     echo
 }
@@ -487,6 +520,18 @@ main() {
             4)
                 # Plattform-Prompt erstellen
                 create_platform_prompt
+                echo
+                read -p "Drücken Sie Enter zum Fortfahren..."
+                ;;
+            5)
+                # Plattform-Prompt Verzeichnis öffnen
+                open_platform_prompts_dir
+                echo
+                read -p "Drücken Sie Enter zum Fortfahren..."
+                ;;
+            6)
+                # Main Prompt Verzeichnis öffnen
+                open_main_prompt_dir
                 echo
                 read -p "Drücken Sie Enter zum Fortfahren..."
                 ;;

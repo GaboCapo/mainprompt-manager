@@ -54,7 +54,9 @@ Das Tool zeigt ein Hauptmenü mit folgenden Optionen:
 2. **Neuen Prompt erstellen**: Interaktive Erstellung eines neuen Prompts
 3. **Config bearbeiten**: Pfade und Einstellungen anpassen
 4. **Plattform-Prompt erstellen**: Generiert einen Plattform-spezifischen Prompt
-5. **Beenden**: Verlässt das Programm
+5. **Plattform-Prompt Verzeichnis öffnen**: Öffnet den Ordner mit generierten Plattform-Prompts
+6. **Main Prompt Verzeichnis öffnen**: Öffnet den Ordner mit allen System-Prompts
+7. **Beenden**: Verlässt das Programm
 
 ### Neuen Prompt erstellen
 
@@ -177,12 +179,11 @@ Für Fragen oder Vorschläge öffnen Sie bitte ein Issue im GitHub Repository.
 ### Config bearbeiten
 
 1. Wählen Sie Option 3 im Hauptmenü
-2. Wählen Sie Ihren Editor (vim oder nano)
+2. Die Config öffnet sich automatisch in nano
 3. Bearbeiten Sie die JSON-Config:
    - `prompt_dir`: Verzeichnis für Systemprompts
    - `main_prompt_filename`: Name der Hauptprompt-Datei
    - `backup_dir`: Name des Backup-Unterordners
-   - `default_editor`: Standard-Editor (vim/nano)
 4. Speichern und Tool neu starten
 
 ### Plattform-Prompt erstellen
@@ -194,3 +195,20 @@ Für Fragen oder Vorschläge öffnen Sie bitte ein Issue im GitHub Repository.
    - Korrekten Pfad zum MainPrompt
    - Deutsche Anweisungen für Claude
 4. Kopieren Sie den generierten Text in die Claude-Plattform
+
+### Verzeichnisse öffnen
+
+**Option 5 - Plattform-Prompt Verzeichnis:**
+- Öffnet den Ordner mit generierten Plattform-Prompts
+- Funktioniert cross-platform (Windows/Linux/Mac)
+- Verwendet automatisch den verfügbaren Dateimanager
+
+**Option 6 - Main Prompt Verzeichnis:**
+- Öffnet das konfigurierte Systemprompt-Verzeichnis
+- Zeigt alle verfügbaren Prompts und Backups
+- Direkter Zugriff für manuelle Bearbeitung
+
+Das Tool erkennt automatisch:
+- Linux: xdg-open, nautilus, dolphin, nemo, thunar
+- Mac: open
+- Windows: explorer.exe

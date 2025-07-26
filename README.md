@@ -4,17 +4,16 @@ Ein einfaches Shell-Tool zum Verwalten und Wechseln zwischen verschiedenen Syste
 
 ## 🚀 Features
 
-- **Einfacher Prompt-Wechsel**: Nummerierte Liste aller verfügbaren Prompts
-- **Neue Prompts erstellen**: Interaktive Erstellung mit Editor-Auswahl (vim/nano)
+- **Einfacher Prompt-Wechsel**: Wählt aus allen Templates im Template-Verzeichnis
+- **Neue Prompts erstellen**: Interaktive Erstellung mit nano
 - **Config-Verwaltung**: Konfigurierbare Pfade und Einstellungen
 - **Plattform-Prompts**: Automatische Generierung von Plattform-spezifischen Prompts
-- **Template-Verwaltung**: Alle Prompts werden als Templates gespeichert
-- **Automatische Backups**: Sichert den aktuellen MainPrompt.md vor dem Wechsel
+- **Template-Verwaltung**: Alle Prompts werden zentral als Templates gespeichert
 - **YAML-Header Support**: Zeigt Namen und Projekt-Informationen aus den Prompt-Dateien
 - **Farbige Ausgabe**: Übersichtliche Darstellung mit Farb-Highlighting
 - **Aktiver Prompt-Indikator**: Zeigt deutlich, welcher Prompt gerade aktiv ist
 - **Hauptmenü**: Übersichtliche Navigation zwischen den Funktionen
-- **Fallback-Mechanismus**: Nutzt Template-Verzeichnis wenn Systemprompt-Ordner fehlt
+- **Fallback-Mechanismus**: Erstellt Verzeichnisse automatisch wenn sie fehlen
 
 ## 📋 Voraussetzungen
 
@@ -92,11 +91,6 @@ status: aktiv
 ```
 /home/commander/Dokumente/Systemprompts/
 ├── MainPrompt.md           # Aktuell aktiver Prompt
-├── projekt1-prompt.md      # Verfügbarer Prompt
-├── projekt2-prompt.md      # Verfügbarer Prompt
-└── backups/               # Automatische Backups
-    ├── MainPrompt_backup_20250115_143022.md
-    └── MainPrompt_backup_20250115_151544.md
 
 /home/commander/Dokumente/Scripts/mainprompt-manager/
 ├── prompt-manager.sh      # Hauptskript
@@ -104,10 +98,11 @@ status: aktiv
 ├── README.md             # Dokumentation
 ├── LICENSE               # MIT Lizenz
 ├── .gitignore           # Git-Ignores
-├── templates/           # Alle Prompt-Templates
-│   ├── projekt1-prompt.md
-│   ├── projekt2-prompt.md
-│   └── archiviert-prompt.md
+├── templates/           # Alle Prompt-Templates (zentrale Verwaltung)
+│   ├── projekt1-prompt.md      # Öffentliche Templates
+│   ├── projekt2-prompt.md      # Werden in Git versioniert
+│   └── private-templates/      # Private Templates (NICHT in Git)
+│       └── mein-privat.md      # Persönliche Templates
 └── platform-prompts/    # Plattform-spezifische Prompts
     └── DE-platform-prompt.md
 ```
@@ -120,7 +115,7 @@ Die Pfade sind in der Datei `config.json` konfiguriert:
 {
   "prompt_dir": "/home/$USER/Dokumente/Systemprompts",
   "main_prompt_filename": "MainPrompt.md",
-  "backup_dir": "backups",
+  "template_dir": "templates",
   "default_editor": "nano",
   "language": "de"
 }
@@ -130,12 +125,13 @@ Sie können diese über Option 3 im Hauptmenü anpassen.
 
 ## 🔧 Erweiterte Funktionen
 
-### Backup-Verwaltung
+### Template-Verwaltung
 
-Alle Backups werden automatisch mit Zeitstempel im `backups/` Ordner gespeichert:
-- Format: `MainPrompt_backup_YYYYMMDD_HHMMSS.md`
-- Backups werden vor jedem Prompt-Wechsel erstellt
-- Alte Backups müssen manuell gelöscht werden
+Alle Prompts werden zentral im `templates/` Ordner verwaltet:
+- Neue Prompts werden dort gespeichert
+- Prompt-Wechsel kopiert aus Templates
+- Keine doppelten Dateien mehr
+- Übersichtliche zentrale Verwaltung
 
 ## 🎯 Anwendungsfälle
 
@@ -183,7 +179,7 @@ Für Fragen oder Vorschläge öffnen Sie bitte ein Issue im GitHub Repository.
 3. Bearbeiten Sie die JSON-Config:
    - `prompt_dir`: Verzeichnis für Systemprompts
    - `main_prompt_filename`: Name der Hauptprompt-Datei
-   - `backup_dir`: Name des Backup-Unterordners
+   - `template_dir`: Verzeichnis für Templates (relativ zum Skript)
 4. Speichern und Tool neu starten
 
 ### Plattform-Prompt erstellen
@@ -212,3 +208,32 @@ Das Tool erkennt automatisch:
 - Linux: xdg-open, nautilus, dolphin, nemo, thunar
 - Mac: open
 - Windows: explorer.exe
+
+## 🔒 Private Templates
+
+Das Tool unterstützt private Templates für persönliche Prompts:
+
+### Private vs. Öffentliche Templates
+
+**Öffentliche Templates** (`templates/`):
+- Werden in Git versioniert
+- Für allgemeine, teilbare Prompts
+- Ideal für Team-Zusammenarbeit
+
+**Private Templates** (`templates/private-templates/`):
+- Werden NICHT in Git versioniert (.gitignore)
+- Für persönliche/vertrauliche Prompts
+- Bleiben lokal auf Ihrem System
+
+### Verwendung
+
+1. **Beim Erstellen**: Wählen Sie ob der Prompt privat sein soll
+2. **In der Übersicht**: Private Prompts sind mit "(PRIVAT)" gekennzeichnet
+3. **Beim Wechseln**: Funktioniert identisch für beide Typen
+
+### Hinweis für Beiträge
+
+Wenn Sie zum Projekt beitragen möchten:
+- Nutzen Sie private Templates für persönliche Systemprompts
+- Nur allgemeine, teilbare Prompts gehören in den öffentlichen Ordner
+- Private Templates werden automatisch von Git ignoriert

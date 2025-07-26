@@ -10,7 +10,7 @@ CONFIG_FILE="$SCRIPT_DIR/config.json"
 # Standard-Konfiguration
 DEFAULT_PROMPT_DIR="/home/$USER/Dokumente/Systemprompts"
 DEFAULT_MAIN_PROMPT="MainPrompt.md"
-DEFAULT_BACKUP_DIR="backups"
+DEFAULT_TEMPLATE_DIR="templates"
 DEFAULT_EDITOR="nano"
 
 # Config laden oder erstellen
@@ -18,7 +18,7 @@ if [ -f "$CONFIG_FILE" ]; then
     # Config laden
     PROMPT_DIR=$(jq -r '.prompt_dir // "'$DEFAULT_PROMPT_DIR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_PROMPT_DIR")
     MAIN_PROMPT=$(jq -r '.main_prompt_filename // "'$DEFAULT_MAIN_PROMPT'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_MAIN_PROMPT")
-    BACKUP_DIR_NAME=$(jq -r '.backup_dir // "'$DEFAULT_BACKUP_DIR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_BACKUP_DIR")
+    TEMPLATE_DIR_NAME=$(jq -r '.template_dir // "'$DEFAULT_TEMPLATE_DIR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_TEMPLATE_DIR")
     DEFAULT_EDITOR_CONFIG=$(jq -r '.default_editor // "'$DEFAULT_EDITOR'"' "$CONFIG_FILE" 2>/dev/null || echo "$DEFAULT_EDITOR")
 else
     # Standard-Config erstellen
@@ -26,20 +26,19 @@ else
 {
   "prompt_dir": "$DEFAULT_PROMPT_DIR",
   "main_prompt_filename": "$DEFAULT_MAIN_PROMPT",
-  "backup_dir": "$DEFAULT_BACKUP_DIR",
+  "template_dir": "$DEFAULT_TEMPLATE_DIR",
   "default_editor": "$DEFAULT_EDITOR",
   "language": "de"
 }
 EOF
     PROMPT_DIR="$DEFAULT_PROMPT_DIR"
     MAIN_PROMPT="$DEFAULT_MAIN_PROMPT"
-    BACKUP_DIR_NAME="$DEFAULT_BACKUP_DIR"
+    TEMPLATE_DIR_NAME="$DEFAULT_TEMPLATE_DIR"
     DEFAULT_EDITOR_CONFIG="$DEFAULT_EDITOR"
 fi
 
 # Pfade setzen
-BACKUP_DIR="$PROMPT_DIR/$BACKUP_DIR_NAME"
-TEMPLATE_DIR="$SCRIPT_DIR/templates"
+TEMPLATE_DIR="$SCRIPT_DIR/$TEMPLATE_DIR_NAME"
 PLATFORM_PROMPTS_DIR="$SCRIPT_DIR/platform-prompts"
 
 # Farben für bessere Lesbarkeit
@@ -49,15 +48,13 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Backup-Verzeichnis, Template-Verzeichnis und Platform-Prompts erstellen falls nicht vorhanden
-mkdir -p "$BACKUP_DIR"
+# Template-Verzeichnis und Platform-Prompts erstellen falls nicht vorhanden
 mkdir -p "$TEMPLATE_DIR"
 mkdir -p "$PLATFORM_PROMPTS_DIR"
 
-# Wenn Prompt-Verzeichnis nicht existiert, Template-Verzeichnis verwenden
+# Wenn Prompt-Verzeichnis nicht existiert, erstellen
 if [ ! -d "$PROMPT_DIR" ]; then
-    echo -e "${YELLOW}Hinweis: Prompt-Verzeichnis nicht gefunden. Verwende Template-Verzeichnis.${NC}"
-    PROMPT_DIR="$TEMPLATE_DIR"
+    echo -e "${YELLOW}Hinweis: Prompt-Verzeichnis wird erstellt: $PROMPT_DIR${NC}"
     mkdir -p "$PROMPT_DIR"
 fi
 
@@ -95,13 +92,48 @@ list_prompts() {
     # Zähler
     local i=1
     
-    # Alle .md Dateien finden (außer MainPrompt.md und Dateien im backup Ordner)
+    # Erst öffentliche Templates
+    echo -e "${BLUE}Öffentliche Templates:${NC}"
     while IFS= read -r file; do
         # Nur Dateiname ohne Pfad
         filename=$(basename "$file")
         
-        # MainPrompt.md überspringen
-        if [ "$filename" != "$MAIN_PROMPT" ]; then
+        prompts+=("$file")
+        
+        # Versuche den Namen aus dem YAML-Header zu extrahieren
+        local prompt_name=$(grep "^name:" "$file" 2>/dev/null | cut -d: -f2- | xargs)
+        if [ -z "$prompt_name" ]; then
+            prompt_name=$filename
+        fi
+        
+        # Prüfe ob dies der aktive Prompt ist
+        if [ -f "$PROMPT_DIR/$MAIN_PROMPT" ] && [ -f "$file" ]; then
+            # Vergleiche Inhalt der Templates mit dem aktiven MainPrompt
+            if diff -q "$file" "$PROMPT_DIR/$MAIN_PROMPT" >/dev/null 2>&1; then
+                echo -e "  ${GREEN}[$i]${NC} $prompt_name ${GREEN}(AKTIV)${NC}"
+            else
+                echo -e "  ${BLUE}[$i]${NC} $prompt_name"
+            fi
+        else
+            echo -e "  ${BLUE}[$i]${NC} $prompt_name"
+        fi
+        
+        ((i++))
+    done < <(find "$TEMPLATE_DIR" -maxdepth 1 -name "*.md" -type f | sort)
+    
+    # Dann private Templates (falls vorhanden)
+    if [ -d "$TEMPLATE_DIR/private-templates" ] && [ "$(ls -A "$TEMPLATE_DIR/private-templates"/*.md 2>/dev/null | grep -v README.md)" ]; then
+        echo
+        echo -e "${YELLOW}Private Templates:${NC}"
+        while IFS= read -r file; do
+            # Nur Dateiname ohne Pfad
+            filename=$(basename "$file")
+            
+            # README.md überspringen
+            if [ "$filename" == "README.md" ]; then
+                continue
+            fi
+            
             prompts+=("$file")
             
             # Versuche den Namen aus dem YAML-Header zu extrahieren
@@ -111,19 +143,20 @@ list_prompts() {
             fi
             
             # Prüfe ob dies der aktive Prompt ist
-            if [ -f "$PROMPT_DIR/$MAIN_PROMPT" ]; then
+            if [ -f "$PROMPT_DIR/$MAIN_PROMPT" ] && [ -f "$file" ]; then
+                # Vergleiche Inhalt der Templates mit dem aktiven MainPrompt
                 if diff -q "$file" "$PROMPT_DIR/$MAIN_PROMPT" >/dev/null 2>&1; then
-                    echo -e "  ${GREEN}[$i]${NC} $prompt_name ${GREEN}(AKTIV)${NC}"
+                    echo -e "  ${GREEN}[$i]${NC} $prompt_name ${GREEN}(AKTIV, PRIVAT)${NC}"
                 else
-                    echo -e "  ${BLUE}[$i]${NC} $prompt_name"
+                    echo -e "  ${BLUE}[$i]${NC} $prompt_name ${YELLOW}(PRIVAT)${NC}"
                 fi
             else
-                echo -e "  ${BLUE}[$i]${NC} $prompt_name"
+                echo -e "  ${BLUE}[$i]${NC} $prompt_name ${YELLOW}(PRIVAT)${NC}"
             fi
             
             ((i++))
-        fi
-    done < <(find "$PROMPT_DIR" -maxdepth 1 -name "*.md" -type f | sort)
+        done < <(find "$TEMPLATE_DIR/private-templates" -maxdepth 1 -name "*.md" -type f 2>/dev/null | sort)
+    fi
     
     echo
 }
@@ -147,19 +180,11 @@ switch_prompt() {
     local selected_file="${prompts[$((selection-1))]}"
     local selected_name=$(basename "$selected_file")
     
-    # Backup des aktuellen MainPrompt erstellen (falls vorhanden)
-    if [ -f "$PROMPT_DIR/$MAIN_PROMPT" ]; then
-        local timestamp=$(date +%Y%m%d_%H%M%S)
-        local backup_file="$BACKUP_DIR/MainPrompt_backup_$timestamp.md"
-        cp "$PROMPT_DIR/$MAIN_PROMPT" "$backup_file"
-        echo -e "${YELLOW}Backup erstellt: $(basename "$backup_file")${NC}"
-    fi
-    
-    # Neuen Prompt aktivieren
+    # Neuen Prompt aktivieren (aus Templates kopieren)
     cp "$selected_file" "$PROMPT_DIR/$MAIN_PROMPT"
     
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Prompt erfolgreich gewechselt zu: $selected_name${NC}"
+        echo -e "${GREEN}✓ Prompt erfolgreich gewechselt!${NC}"
         
         # Info aus dem neuen Prompt anzeigen
         local prompt_name=$(grep "^name:" "$PROMPT_DIR/$MAIN_PROMPT" 2>/dev/null | cut -d: -f2- | xargs)
@@ -196,6 +221,29 @@ create_new_prompt() {
     # Dateinamen generieren (Leerzeichen durch Bindestriche ersetzen, lowercase)
     filename=$(echo "$prompt_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[^a-z0-9-]//g')
     filename="${filename}.md"
+    
+    # Prüfen ob Datei bereits existiert (in beiden Template-Ordnern)
+    if [ -f "$TEMPLATE_DIR/$filename" ] || [ -f "$TEMPLATE_DIR/private-templates/$filename" ]; then
+        echo -e "${RED}Fehler: Ein Prompt mit diesem Namen existiert bereits!${NC}"
+        echo -e "${YELLOW}Bitte wählen Sie einen anderen Namen.${NC}"
+        return 1
+    fi
+    
+    # Fragen ob privat oder öffentlich
+    echo
+    echo -e "${BLUE}Soll dieser Prompt privat sein?${NC}"
+    echo "(Private Prompts werden nicht in Git versioniert)"
+    echo "  [j] Ja, privat"
+    echo "  [n] Nein, öffentlich"
+    read -p "> " is_private
+    
+    # Zielverzeichnis bestimmen
+    if [[ "$is_private" =~ ^[jJyY]$ ]]; then
+        target_dir="$TEMPLATE_DIR/private-templates"
+        mkdir -p "$target_dir"
+    else
+        target_dir="$TEMPLATE_DIR"
+    fi
     
     # Temporäre Datei mit Template erstellen
     temp_file="/tmp/new_prompt_$$.md"
@@ -238,17 +286,16 @@ EOF
     
     # Prüfen ob Datei gespeichert wurde
     if [ -s "$temp_file" ]; then
-        # In Template-Ordner speichern
-        cp "$temp_file" "$TEMPLATE_DIR/$filename"
-        
-        # Optional: Auch direkt als verfügbaren Prompt speichern
-        cp "$temp_file" "$PROMPT_DIR/$filename"
+        # In entsprechenden Template-Ordner speichern
+        cp "$temp_file" "$target_dir/$filename"
         
         echo
         echo -e "${GREEN}✓ Prompt erfolgreich erstellt!${NC}"
-        echo -e "${BLUE}Gespeichert als:${NC}"
-        echo "  - Template: $TEMPLATE_DIR/$filename"
-        echo "  - Prompt: $PROMPT_DIR/$filename"
+        if [[ "$is_private" =~ ^[jJyY]$ ]]; then
+            echo -e "${BLUE}Gespeichert als privates Template: $target_dir/$filename${NC}"
+        else
+            echo -e "${BLUE}Gespeichert als öffentliches Template: $target_dir/$filename${NC}"
+        fi
         
         # Aufräumen
         rm "$temp_file"
@@ -259,16 +306,8 @@ EOF
         read -p "> " activate
         
         if [[ "$activate" =~ ^[jJyY]$ ]]; then
-            # Backup erstellen
-            if [ -f "$PROMPT_DIR/$MAIN_PROMPT" ]; then
-                local timestamp=$(date +%Y%m%d_%H%M%S)
-                local backup_file="$BACKUP_DIR/MainPrompt_backup_$timestamp.md"
-                cp "$PROMPT_DIR/$MAIN_PROMPT" "$backup_file"
-                echo -e "${YELLOW}Backup erstellt: $(basename "$backup_file")${NC}"
-            fi
-            
-            # Aktivieren
-            cp "$PROMPT_DIR/$filename" "$PROMPT_DIR/$MAIN_PROMPT"
+            # Aktivieren (aus Template kopieren)
+            cp "$target_dir/$filename" "$PROMPT_DIR/$MAIN_PROMPT"
             echo -e "${GREEN}✓ Neuer Prompt wurde aktiviert!${NC}"
         fi
     else
@@ -287,7 +326,7 @@ edit_config() {
     echo -e "${BLUE}Aktuelle Konfiguration:${NC}"
     echo "- Prompt-Verzeichnis: $PROMPT_DIR"
     echo "- MainPrompt-Dateiname: $MAIN_PROMPT"
-    echo "- Backup-Verzeichnis: $BACKUP_DIR_NAME"
+    echo "- Template-Verzeichnis: $TEMPLATE_DIR_NAME"
     echo "- Standard-Editor: nano"
     echo
     

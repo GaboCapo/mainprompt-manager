@@ -6,6 +6,7 @@ backups/
 
 # Private Templates (benutzerdefiniert, nicht versioniert)
 templates/private-templates/
+templates/*/private-templates/
 
 # Config-Dateien (können Benutzerpfade enthalten)
 config.json

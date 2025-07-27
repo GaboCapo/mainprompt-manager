@@ -1,19 +1,19 @@
-# Mainprompt Manager
+# Mainprompt Manager v2.0 - Multilingual
 
-Ein einfaches Shell-Tool zum Verwalten und Wechseln zwischen verschiedenen System-Prompts für Claude AI.
+Ein mehrsprachiges Shell-Tool zum Verwalten und Wechseln zwischen verschiedenen System-Prompts für Claude AI.
 
 ## 🚀 Features
 
+- **Mehrsprachige Unterstützung**: Vollständig auf Deutsch und Englisch verfügbar
+- **Main Prompt Management**: Klare Unterscheidung zwischen Main Prompts und Platform Prompts
+- **Platform Prompt Templates**: Vordefinierte Templates in beiden Sprachen
 - **Einfacher Prompt-Wechsel**: Wählt aus allen Templates im Template-Verzeichnis
 - **Neue Prompts erstellen**: Interaktive Erstellung mit nano
 - **Config-Verwaltung**: Konfigurierbare Pfade und Einstellungen
-- **Plattform-Prompts**: Automatische Generierung von Plattform-spezifischen Prompts
-- **Template-Verwaltung**: Alle Prompts werden zentral als Templates gespeichert
-- **YAML-Header Support**: Zeigt Namen und Projekt-Informationen aus den Prompt-Dateien
+- **Private Templates**: Separate Verwaltung privater Prompts pro Sprache
+- **YAML-Header Support**: Zeigt Namen und Projekt-Informationen
 - **Farbige Ausgabe**: Übersichtliche Darstellung mit Farb-Highlighting
-- **Aktiver Prompt-Indikator**: Zeigt deutlich, welcher Prompt gerade aktiv ist
-- **Hauptmenü**: Übersichtliche Navigation zwischen den Funktionen
-- **Fallback-Mechanismus**: Erstellt Verzeichnisse automatisch wenn sie fehlen
+- **Cross-Platform**: Funktioniert auf Linux, Mac und Windows
 
 ## 📋 Voraussetzungen
 
@@ -237,3 +237,31 @@ Wenn Sie zum Projekt beitragen möchten:
 - Nutzen Sie private Templates für persönliche Systemprompts
 - Nur allgemeine, teilbare Prompts gehören in den öffentlichen Ordner
 - Private Templates werden automatisch von Git ignoriert
+## 🌍 Sprachen / Languages
+
+Das Tool unterstützt:
+- 🇩🇪 **Deutsch** (Standard)
+- 🇬🇧 **English**
+
+Die Sprache kann jederzeit über das Hauptmenü gewechselt werden.
+
+## 📁 Verzeichnisstruktur / Directory Structure
+
+```
+mainprompt-manager/
+├── prompt-manager.sh      # Hauptskript / Main script
+├── config.json           # Konfiguration / Configuration
+├── README.md             # Dokumentation / Documentation
+├── LICENSE               # MIT Lizenz / MIT License
+├── .gitignore           # Git-Ignores
+├── templates/           # Template-Verzeichnis / Template directory
+│   ├── de-deutsch/      # Deutsche Templates / German templates
+│   │   ├── main-prompts/
+│   │   ├── platform-prompts/
+│   │   └── private-templates/
+│   └── en-english/      # Englische Templates / English templates
+│       ├── main-prompts/
+│       ├── platform-prompts/
+│       └── private-templates/
+└── platform-prompts/    # Generierte Plattform-Prompts / Generated platform prompts
+```

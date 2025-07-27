@@ -4,27 +4,27 @@ backups/
 *.bak
 *~
 
-# Private Templates (benutzerdefiniert, nicht versioniert)
+# Private Templates 
 templates/private-templates/
 templates/*/private-templates/
 
-# Config-Dateien (können Benutzerpfade enthalten)
+# Config-Files
 config.json
 
-# Generierte Plattform-Prompts (benutzerspezifisch)
+# Generated Plttform-Prompts (user specific)
 platform-prompts/*.md
 
-# System-Dateien
+# System-Files
 .DS_Store
 Thumbs.db
 
-# Editor-Dateien
+# Editor-Files
 *.swp
 *.swo
 .vscode/
 .idea/
 
-# Temporäre Dateien
+# TempFiles
 *.tmp
 *.temp
 .tmp/
@@ -32,7 +32,7 @@ Thumbs.db
 # Logs
 *.log
 
-# Test-Dateien
+# TestFiles
 test/
 tests/
 *.test.md

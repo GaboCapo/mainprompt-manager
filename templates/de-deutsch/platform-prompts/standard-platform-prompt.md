@@ -2,7 +2,7 @@
 
 Führe vor jeder Antwort einen Reasoning Prozess durch, wo du deine Vorgehensweise Strategie noch einmal zusammenfasst. 
 
-Lese dir vorab immer über die Erweiterung Desktop Commander {{MAIN_PROMPT_PATH}} durch dieser definiert den für dich relevanten Kontext.
+Lese dir vorab immer {{MAIN_PROMPT_PATH}} durch dieser definiert den für dich relevanten Kontext.
 
 Solltest du Probleme haben stoppe jederzeit und wir lösen zusammen den Fehler.
 

@@ -1,267 +1,155 @@
 # Mainprompt Manager v2.0 - Multilingual
 
-Ein mehrsprachiges Shell-Tool zum Verwalten und Wechseln zwischen verschiedenen System-Prompts für Claude AI.
+Multilingual CLI tool to manage prompt sets for local AI agents with file system access.
 
 ## 🚀 Features
 
-- **Mehrsprachige Unterstützung**: Vollständig auf Deutsch und Englisch verfügbar
-- **Main Prompt Management**: Klare Unterscheidung zwischen Main Prompts und Platform Prompts
-- **Platform Prompt Templates**: Vordefinierte Templates in beiden Sprachen
-- **Einfacher Prompt-Wechsel**: Wählt aus allen Templates im Template-Verzeichnis
-- **Neue Prompts erstellen**: Interaktive Erstellung mit nano
-- **Config-Verwaltung**: Konfigurierbare Pfade und Einstellungen
-- **Private Templates**: Separate Verwaltung privater Prompts pro Sprache
-- **YAML-Header Support**: Zeigt Namen und Projekt-Informationen
-- **Farbige Ausgabe**: Übersichtliche Darstellung mit Farb-Highlighting
-- **Cross-Platform**: Funktioniert auf Linux, Mac und Windows
+- **Multilingual Support**: Fully available in German and English
+- **Main Prompt Management**: Clear distinction between Main Prompts and Platform Prompts
+- **Platform Prompt Templates**: Predefined templates in both languages
+- **Easy Prompt Switching**: Choose from all templates in the template directory
+- **Create New Prompts**: Interactive creation with nano
+- **Config Management**: Configurable paths and settings
+- **Private Templates**: Separate management of private prompts per language
+- **YAML Header Support**: Shows name and project information
+- **Colored Output**: Clear display with color highlighting
+- **Cross-Platform**: Works on Linux, Mac, and Windows
 
-## 📋 Voraussetzungen
+## 🌍 Languages / Sprachen
+
+The tool supports:
+- 🇬🇧 **English**
+- 🇩🇪 **German** (Default)
+
+The language can be changed at any time via the main menu.
+
+## 📋 Prerequisites
 
 - Bash Shell
-- Linux/Unix System (getestet auf Ubuntu/Debian)
-- jq (JSON-Prozessor) - für Config-Verwaltung
-- Schreibrechte im Systemprompts-Verzeichnis
+- Linux/Unix System (tested on Ubuntu/Debian)
+- jq (JSON processor) - for config management
+- Write permissions in the system prompts directory
 
 ## 🛠️ Installation
 
-1. Repository klonen:
+1. Clone the repository:
 ```bash
-git clone https://github.com/IhrUsername/mainprompt-manager.git
+git clone https://github.com/GaboCapo/mainprompt-manager.git
 cd mainprompt-manager
 ```
 
-2. Ausführbar machen (falls nicht bereits geschehen):
+2. Make executable (if not already):
 ```bash
 chmod +x prompt-manager.sh
 ```
 
-3. Optional: Symbolischen Link erstellen für systemweiten Zugriff:
+3. ( Optional: Create a symbolic link for system-wide access: )
 ```bash
 sudo ln -s $(pwd)/prompt-manager.sh /usr/local/bin/prompt-manager
 ```
 
-## 📖 Verwendung
+## 📖 Usage
 
-### Grundlegende Verwendung
+### Basic Usage
 
 ```bash
 ./prompt-manager.sh
 ```
 
-Das Tool zeigt ein Hauptmenü mit folgenden Optionen:
-1. **Prompt wechseln**: Zeigt alle verfügbaren Prompts zur Auswahl
-2. **Neuen Prompt erstellen**: Interaktive Erstellung eines neuen Prompts
-3. **Config bearbeiten**: Pfade und Einstellungen anpassen
-4. **Plattform-Prompt erstellen**: Generiert einen Plattform-spezifischen Prompt
-5. **Plattform-Prompt Verzeichnis öffnen**: Öffnet den Ordner mit generierten Plattform-Prompts
-6. **Main Prompt Verzeichnis öffnen**: Öffnet den Ordner mit allen System-Prompts
-7. **Beenden**: Verlässt das Programm
+The tool shows a main menu with the following options:
+1. **Switch Main Prompt**: Shows all available prompts for selection
+2. **Create New Main Prompt**: Interactive creation of a new prompt
+3. **Edit Config**: Adjust paths and settings
+4. **Create/Show Platform Prompt**: Generate a platform-specific prompt
+5. **Open Platform Prompt Directory**: Opens the folder with generated platform prompts
+6. **Open Main Prompt Directory**: Opens the folder with all system prompts
+7. **Change Language**: Switch between German and English
+8. **Quit**: Exit the program
 
-### Neuen Prompt erstellen
+### Creating a New Main Prompt
 
-1. Wählen Sie Option 2 im Hauptmenü
-2. Wählen Sie Ihren bevorzugten Editor (vim oder nano)
-3. Geben Sie einen Namen für den Prompt ein
-4. Der Editor öffnet sich mit einer Vorlage
-5. Bearbeiten Sie die Vorlage nach Ihren Wünschen
-6. Speichern und schließen Sie den Editor
-7. Optional: Aktivieren Sie den neuen Prompt sofort
+1. Choose option 2 in the main menu
+2. Enter a name for the prompt
+3. The editor (nano) opens with a template
+4. Edit the template as desired
+5. Save and close the editor (Ctrl+O, Enter, Ctrl+X)
+6. Optional: Activate the new prompt immediately
 
-### Prompt-Struktur
+### Creating a Platform Prompt
 
-Prompts sollten im YAML-Header folgende Informationen enthalten:
+1. Choose option 4 in the main menu
+2. Select a template from the available options
+3. Confirm the detected paths
+4. The generated prompt contains:
+   - Automatically detected username
+   - Correct path to the MainPrompt
+   - Instructions in the selected language
+5. Copy the generated text to the prefered platform
 
-```yaml
----
-name: Mein Projekt Prompt
-version: 1.0
-last_updated: 2025-01-15
-project: mein-projekt
-tags:
-  - tag1
-  - tag2
-status: aktiv
----
+### Editing Configuration
 
-# Prompt Inhalt hier...
-```
-
-### Verzeichnis-Struktur
-
-```
-/home/commander/Dokumente/Systemprompts/
-├── MainPrompt.md           # Aktuell aktiver Prompt
-
-/home/commander/Dokumente/Scripts/mainprompt-manager/
-├── prompt-manager.sh      # Hauptskript
-├── config.json           # Konfigurationsdatei
-├── README.md             # Dokumentation
-├── LICENSE               # MIT Lizenz
-├── .gitignore           # Git-Ignores
-├── templates/           # Alle Prompt-Templates (zentrale Verwaltung)
-│   ├── projekt1-prompt.md      # Öffentliche Templates
-│   ├── projekt2-prompt.md      # Werden in Git versioniert
-│   └── private-templates/      # Private Templates (NICHT in Git)
-│       └── mein-privat.md      # Persönliche Templates
-└── platform-prompts/    # Plattform-spezifische Prompts
-    └── DE-platform-prompt.md
-```
-
-## ⚙️ Konfiguration
-
-Die Pfade sind in der Datei `config.json` konfiguriert:
-
-```json
-{
-  "prompt_dir": "/home/$USER/Dokumente/Systemprompts",
-  "main_prompt_filename": "MainPrompt.md",
-  "template_dir": "templates",
-  "default_editor": "nano",
-  "language": "de"
-}
-```
-
-Sie können diese über Option 3 im Hauptmenü anpassen.
-
-## 🔧 Erweiterte Funktionen
-
-### Template-Verwaltung
-
-Alle Prompts werden zentral im `templates/` Ordner verwaltet:
-- Neue Prompts werden dort gespeichert
-- Prompt-Wechsel kopiert aus Templates
-- Keine doppelten Dateien mehr
-- Übersichtliche zentrale Verwaltung
-
-## 🎯 Anwendungsfälle
-
-1. **Projekt-Wechsel**: Schnell zwischen verschiedenen Projekt-Kontexten wechseln
-2. **Prompt-Versionierung**: Verschiedene Versionen eines Prompts testen
-3. **Team-Zusammenarbeit**: Gemeinsame Prompts im Team nutzen
-4. **Entwicklungs-Workflow**: Unterschiedliche Prompts für Dev/Test/Prod
-
-## 🐛 Fehlerbehebung
-
-### Keine Prompts gefunden
-- Überprüfen Sie, ob `.md` Dateien im konfigurierten Verzeichnis vorhanden sind
-- Stellen Sie sicher, dass Sie Leserechte für das Verzeichnis haben
-
-### Fehler beim Wechseln
-- Überprüfen Sie die Schreibrechte im Systemprompts-Verzeichnis
-- Stellen Sie sicher, dass genügend Speicherplatz für Backups vorhanden ist
-
-## 📝 Lizenz
-
-Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) Datei für Details.
-
-## 🤝 Beitragen
-
-Beiträge sind willkommen! Bitte:
-
-1. Forken Sie das Repository
-2. Erstellen Sie einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
-3. Committen Sie Ihre Änderungen (`git commit -m 'Add some AmazingFeature'`)
-4. Pushen Sie zum Branch (`git push origin feature/AmazingFeature`)
-5. Öffnen Sie einen Pull Request
-
-## 📞 Kontakt
-
-Für Fragen oder Vorschläge öffnen Sie bitte ein Issue im GitHub Repository.
-
----
-
-**Hinweis**: Dieses Tool wurde speziell für die Verwaltung von Claude AI System-Prompts entwickelt.
-
-### Config bearbeiten
-
-1. Wählen Sie Option 3 im Hauptmenü
-2. Die Config öffnet sich automatisch in nano
-3. Bearbeiten Sie die JSON-Config:
-   - `prompt_dir`: Verzeichnis für Systemprompts
-   - `main_prompt_filename`: Name der Hauptprompt-Datei
-   - `template_dir`: Verzeichnis für Templates (relativ zum Skript)
-4. Speichern und Tool neu starten
-
-### Plattform-Prompt erstellen
-
-1. Wählen Sie Option 4 im Hauptmenü
-2. Überprüfen Sie die erkannten Pfade
-3. Der generierte Prompt enthält:
-   - Automatisch erkannten Benutzernamen
-   - Korrekten Pfad zum MainPrompt
-   - Deutsche Anweisungen für Claude
-4. Kopieren Sie den generierten Text in die Claude-Plattform
-
-### Verzeichnisse öffnen
-
-**Option 5 - Plattform-Prompt Verzeichnis:**
-- Öffnet den Ordner mit generierten Plattform-Prompts
-- Funktioniert cross-platform (Windows/Linux/Mac)
-- Verwendet automatisch den verfügbaren Dateimanager
-
-**Option 6 - Main Prompt Verzeichnis:**
-- Öffnet das konfigurierte Systemprompt-Verzeichnis
-- Zeigt alle verfügbaren Prompts und Backups
-- Direkter Zugriff für manuelle Bearbeitung
-
-Das Tool erkennt automatisch:
-- Linux: xdg-open, nautilus, dolphin, nemo, thunar
-- Mac: open
-- Windows: explorer.exe
+1. Choose option 3 in the main menu
+2. The config opens automatically in nano
+3. Edit the JSON config:
+   - `prompt_dir`: Directory for system prompts
+   - `main_prompt_filename`: Name of the main prompt file
+   - `template_dir`: Directory for templates (relative to script)
+   - `language`: Language for prompts (de/en)
+   - `ui_language`: Language for UI (de/en)
+4. Save and restart the tool
 
 ## 🔒 Private Templates
 
-Das Tool unterstützt private Templates für persönliche Prompts:
+The tool supports private templates for personal prompts:
 
-### Private vs. Öffentliche Templates
+**Public Templates** (`templates/[language]/main-prompts/`):
+- Version controlled in Git
+- For general, shareable prompts
+- Ideal for team collaboration
 
-**Öffentliche Templates** (`templates/`):
-- Werden in Git versioniert
-- Für allgemeine, teilbare Prompts
-- Ideal für Team-Zusammenarbeit
+**Private Templates** (`templates/[language]/private-templates/`):
+- NOT version controlled in Git (.gitignore)
+- For personal/confidential prompts
+- Remain local on your system
 
-**Private Templates** (`templates/private-templates/`):
-- Werden NICHT in Git versioniert (.gitignore)
-- Für persönliche/vertrauliche Prompts
-- Bleiben lokal auf Ihrem System
+## 🎯 Use Cases
 
-### Verwendung
+1. **Project Switching**: Quickly switch between different project contexts
+2. **Prompt Versioning**: Test different versions of a prompt
+3. **Team Collaboration**: Share common prompts within the team
+4. **Development Workflow**: Different prompts for Dev/Test/Prod
+5. **Multilingual Work**: Work with prompts in different languages
 
-1. **Beim Erstellen**: Wählen Sie ob der Prompt privat sein soll
-2. **In der Übersicht**: Private Prompts sind mit "(PRIVAT)" gekennzeichnet
-3. **Beim Wechseln**: Funktioniert identisch für beide Typen
+## 🐛 Troubleshooting
 
-### Hinweis für Beiträge
+### No prompts found
+- Check if `.md` files exist in the configured directory
+- Ensure you have read permissions for the directory
 
-Wenn Sie zum Projekt beitragen möchten:
-- Nutzen Sie private Templates für persönliche Systemprompts
-- Nur allgemeine, teilbare Prompts gehören in den öffentlichen Ordner
-- Private Templates werden automatisch von Git ignoriert
-## 🌍 Sprachen / Languages
+### Error when switching
+- Check write permissions in the system prompts directory
+- Ensure sufficient disk space is available
 
-Das Tool unterstützt:
-- 🇩🇪 **Deutsch** (Standard)
-- 🇬🇧 **English**
+### Language not changing
+- Restart the tool after changing the language
+- Check if the config.json was saved correctly
 
-Die Sprache kann jederzeit über das Hauptmenü gewechselt werden.
+## 📝 License
 
-## 📁 Verzeichnisstruktur / Directory Structure
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
 
-```
-mainprompt-manager/
-├── prompt-manager.sh      # Hauptskript / Main script
-├── config.json           # Konfiguration / Configuration
-├── README.md             # Dokumentation / Documentation
-├── LICENSE               # MIT Lizenz / MIT License
-├── .gitignore           # Git-Ignores
-├── templates/           # Template-Verzeichnis / Template directory
-│   ├── de-deutsch/      # Deutsche Templates / German templates
-│   │   ├── main-prompts/
-│   │   ├── platform-prompts/
-│   │   └── private-templates/
-│   └── en-english/      # Englische Templates / English templates
-│       ├── main-prompts/
-│       ├── platform-prompts/
-│       └── private-templates/
-└── platform-prompts/    # Generierte Plattform-Prompts / Generated platform prompts
-```
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📞 Contact
+
+For questions or suggestions, please open an issue in the GitHub repository.
+
+

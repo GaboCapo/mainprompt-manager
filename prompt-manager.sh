@@ -141,7 +141,7 @@ declare -A TEXTS_DE=(
     ["instructions"]="Anleitung:"
     ["open_file"]="1. Öffnen Sie die Datei:"
     ["copy_text"]="2. Kopieren Sie den Text bis zur Trennlinie (---)"
-    ["paste_claude"]="3. Fügen Sie ihn in die Claude-Plattform ein"
+    ["paste_provider"]="3. Fügen Sie ihn in die provider-Plattform ein"
     ["show_prompt"]="Möchten Sie den Prompt jetzt anzeigen? (j/n)"
     ["platform_prompt_copy"]="=== PLATTFORM-PROMPT (zum Kopieren) ==="
     ["opening_directory"]="Öffne"
@@ -218,7 +218,7 @@ declare -A TEXTS_EN=(
     ["instructions"]="Instructions:"
     ["open_file"]="1. Open the file:"
     ["copy_text"]="2. Copy the text up to the separator line (---)"
-    ["paste_claude"]="3. Paste it into the Claude platform"
+    ["paste_provider"]="3. Paste it into the provider platform"
     ["show_prompt"]="Would you like to display the prompt now? (y/n)"
     ["platform_prompt_copy"]="=== PLATFORM PROMPT (for copying) ==="
     ["opening_directory"]="Opening"
@@ -650,7 +650,7 @@ create_platform_prompt() {
     echo -e "${YELLOW}$(get_text "instructions")${NC}"
     echo "$(get_text "open_file") $platform_prompt_file"
     echo "$(get_text "copy_text")"
-    echo "$(get_text "paste_claude")"
+    echo "$(get_text "paste_provider")"
     echo
     
     # Optional: Datei direkt anzeigen

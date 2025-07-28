@@ -45,7 +45,7 @@ cd mainprompt-manager
 chmod +x prompt-manager.sh
 ```
 
-3. ( Optional: Create a symbolic link for system-wide access: )
+3. ( Optional: Create a symbolic link for system-wide access: ) in Development
 ```bash
 sudo ln -s $(pwd)/prompt-manager.sh /usr/local/bin/prompt-manager
 ```

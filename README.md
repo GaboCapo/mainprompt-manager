@@ -1,3 +1,5 @@
+<img width="1280" height="640" alt="Image" src="https://github.com/user-attachments/assets/3afd4298-a941-4bef-b598-11ad5827b294" />
+
 # Mainprompt Manager v2.0 - Multilingual
 
 Multilingual CLI tool to manage prompt sets for local AI agents with file system access.

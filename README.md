@@ -1,5 +1,18 @@
 <img width="1280" height="640" alt="Image" src="https://github.com/user-attachments/assets/3afd4298-a941-4bef-b598-11ad5827b294" />
 
+
+⚠️ WARNING: Changes made directly to the MainPrompt will NOT be saved automatically!
+
+Currently, there is no persistent editing functionality for the MainPrompt.  
+If you modify it manually, your changes will be lost when switching prompts.
+
+💡 Workaround:  
+To retain changes, you must edit the prompt *template* directly and use the prompt switcher to reload it. Be aware that this method does NOT create backups.
+
+Persistent editing is not yet supported — use with caution.
+
+
+
 # Mainprompt Manager v2.0 - Multilingual
 
 Multilingual CLI tool to manage prompt sets for local AI agents with file system access.
